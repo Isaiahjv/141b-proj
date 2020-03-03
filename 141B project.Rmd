@@ -37,3 +37,42 @@ beatles %>%
 beatles
 ```
 
+
+```{r}
+r <- GET(
+  "https://app.ticketmaster.com/discovery/v2/events.json?city=Sacramento&apikey=gNIIPGtZ3AJQKL7S6hfJ5sgYJLSEeKJc",
+  query = list(
+    size = 200,
+    page = 1
+  )
+)
+json <- content(r, as = "text")
+data <- fromJSON(json)
+data <- data[[1]]
+data <- data[[1]]
+data <- data %>% 
+  select(name, type, id, test, url, locale)
+data
+
+
+
+
+for (i in 2:4){
+r <- GET(
+  "https://app.ticketmaster.com/discovery/v2/events.json?city=Sacramento&apikey=gNIIPGtZ3AJQKL7S6hfJ5sgYJLSEeKJc",
+  query = list(
+    size = 200,
+    page = i
+  )
+)
+json <- content(r, as = "text")
+data_add <- fromJSON(json)
+data_add <- data_add[[1]]
+data_add <- data_add[[1]]
+data_add <- data_add %>% select(name, type, id, test, url, locale)
+data <- bind_rows(data, data_add)
+}
+data
+```
+
+
