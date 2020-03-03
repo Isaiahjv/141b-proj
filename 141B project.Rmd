@@ -1,0 +1,39 @@
+---
+title: "141B Proj"
+author: "Isaiah Valencia"
+date: "3/3/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+install.packages('spotifyr')
+
+```
+
+
+```{r }
+library(spotifyr)
+Sys.setenv(SPOTIFY_CLIENT_ID = 'f0d212500a7e4c74baaab9025ea186c3')
+Sys.setenv(SPOTIFY_CLIENT_SECRET = '4985198dd20d47c7bdc5e52a1cf01e3f')
+
+access_token <- get_spotify_access_token()
+```
+
+
+```{r , echo=FALSE}
+library(spotifyr)
+beatles <- get_artist_audio_features('the beatles')
+
+```
+
+```{r}
+library(tidyverse)
+library(knitr)
+
+beatles %>% 
+    count(key_mode, sort = TRUE) %>% 
+    head(5) %>% 
+    kable()
+beatles
+```
+
