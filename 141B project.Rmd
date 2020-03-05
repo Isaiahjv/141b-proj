@@ -6,8 +6,6 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-install.packages('spotifyr')
-
 ```
 
 
@@ -23,7 +21,7 @@ access_token <- get_spotify_access_token()
 ```{r , echo=FALSE}
 library(spotifyr)
 beatles <- get_artist_audio_features('the beatles')
-
+beatles_lp <- get_artist_albums('3WrFJ7ztbogyGnTHbHJFl2')
 ```
 
 ```{r}
@@ -35,5 +33,14 @@ beatles %>%
     head(5) %>% 
     kable()
 beatles
+beatles_lp
+#get_album_tracks('1WMVvswNzB9i2UMh9svso5')
+get_album_data('the beatles')
+```
+
+
+```{r}
+joy <- get_artist_audio_features('joy division')
+joy
 ```
 
