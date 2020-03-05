@@ -41,7 +41,7 @@ beatles
 
     albums <- get_artist_audio_features('justin bieber') %>%  pull(track_name)
 
- artist = c("ariana grande", "justin bieber", "post malone")
+artist = c("ariana grande", "justin bieber", "post malone")
 
 ui <- fluidPage(
   
@@ -53,13 +53,14 @@ ui <- fluidPage(
     ),
   
   
-  mainPanel(verbatimTextOutput("albums"))
+  mainPanel(plotOutput("danceabilityPlot"))
 ))
 
 server <- function(input, output) {
   
-  output$albums<- renderPrint({
-    get_artist_audio_features(artist == input$artist) %>%  pull(track_name)
+  output$danceabilityPlot<- renderPrint({
+    x <- get_artist_audio_features(input$artist) %>%  pull(danceability) 
+      hist(x)
   })
  
 }
