@@ -39,11 +39,33 @@ beatles
 
 ```{r}
 
-beatles <- get_artist_audio_features(artist =c('justin bieber'))
-beatles
-
-
     albums <- get_artist_audio_features('justin bieber') %>%  pull(track_name)
+
+ artist = c("ariana grande", "justin bieber", "post malone")
+
+ui <- fluidPage(
+  
+  titlePanel("Test"),
+  
+  sidebarLayout(
+    sidebarPanel(
+      selectInput(inputId = "artist", label = "Artist: ", choices = artist, multiple =F)
+    ),
+  
+  
+  mainPanel(verbatimTextOutput("albums"))
+))
+
+server <- function(input, output) {
+  
+  output$albums<- renderPrint({
+    get_artist_audio_features(artist == input$artist) %>%  pull(track_name)
+  })
+ 
+}
+
+shinyApp(ui = ui, server = server)
+
 ```
 
 
