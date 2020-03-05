@@ -6,7 +6,7 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-#install.packages('spotifyr')
+#install.packages('spotifyr', 'fmsb')
 ```
 
 
