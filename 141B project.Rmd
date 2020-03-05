@@ -6,13 +6,14 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-install.packages('spotifyr')
-
+#install.packages('spotifyr')
 ```
 
 
 ```{r }
 library(spotifyr)
+library(tidyverse)
+library(knitr)
 Sys.setenv(SPOTIFY_CLIENT_ID = 'f0d212500a7e4c74baaab9025ea186c3')
 Sys.setenv(SPOTIFY_CLIENT_SECRET = '4985198dd20d47c7bdc5e52a1cf01e3f')
 
@@ -21,15 +22,11 @@ access_token <- get_spotify_access_token()
 
 
 ```{r , echo=FALSE}
-library(spotifyr)
-beatles <- get_artist_audio_features('the beatles')
-
+beatles <- get_artist_audio_features('led zeppelin')
+beatles
 ```
 
 ```{r}
-library(tidyverse)
-library(knitr)
-
 beatles %>% 
     count(key_mode, sort = TRUE) %>% 
     head(5) %>% 
@@ -38,41 +35,15 @@ beatles
 ```
 
 
+
+
 ```{r}
-r <- GET(
-  "https://app.ticketmaster.com/discovery/v2/events.json?city=Sacramento&apikey=gNIIPGtZ3AJQKL7S6hfJ5sgYJLSEeKJc",
-  query = list(
-    size = 200,
-    page = 1
-  )
-)
-json <- content(r, as = "text")
-data <- fromJSON(json)
-data <- data[[1]]
-data <- data[[1]]
-data <- data %>% 
-  select(name, type, id, test, url, locale)
-data
+
+beatles <- get_artist_audio_features(artist =c('justin bieber'))
+beatles
 
 
-
-
-for (i in 2:4){
-r <- GET(
-  "https://app.ticketmaster.com/discovery/v2/events.json?city=Sacramento&apikey=gNIIPGtZ3AJQKL7S6hfJ5sgYJLSEeKJc",
-  query = list(
-    size = 200,
-    page = i
-  )
-)
-json <- content(r, as = "text")
-data_add <- fromJSON(json)
-data_add <- data_add[[1]]
-data_add <- data_add[[1]]
-data_add <- data_add %>% select(name, type, id, test, url, locale)
-data <- bind_rows(data, data_add)
-}
-data
+    albums <- get_artist_audio_features('justin bieber') %>%  pull(track_name)
 ```
 
 
