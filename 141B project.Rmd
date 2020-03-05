@@ -6,11 +6,17 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
+<<<<<<< HEAD
+=======
+#install.packages('spotifyr')
+>>>>>>> 8a02fcd87770b00c734051e1618576d70b114eb2
 ```
 
 
 ```{r }
 library(spotifyr)
+library(tidyverse)
+library(knitr)
 Sys.setenv(SPOTIFY_CLIENT_ID = 'f0d212500a7e4c74baaab9025ea186c3')
 Sys.setenv(SPOTIFY_CLIENT_SECRET = '4985198dd20d47c7bdc5e52a1cf01e3f')
 
@@ -19,15 +25,17 @@ access_token <- get_spotify_access_token()
 
 
 ```{r , echo=FALSE}
+<<<<<<< HEAD
 library(spotifyr)
 beatles <- get_artist_audio_features('the beatles')
 beatles_lp <- get_artist_albums('3WrFJ7ztbogyGnTHbHJFl2')
+=======
+beatles <- get_artist_audio_features('led zeppelin')
+beatles
+>>>>>>> 8a02fcd87770b00c734051e1618576d70b114eb2
 ```
 
 ```{r}
-library(tidyverse)
-library(knitr)
-
 beatles %>% 
     count(key_mode, sort = TRUE) %>% 
     head(5) %>% 
@@ -43,4 +51,39 @@ get_album_data('the beatles')
 joy <- get_artist_audio_features('joy division')
 joy
 ```
+
+
+
+
+```{r}
+
+    albums <- get_artist_audio_features('justin bieber') %>%  pull(track_name)
+
+ artist = c("ariana grande", "justin bieber", "post malone")
+
+ui <- fluidPage(
+  
+  titlePanel("Test"),
+  
+  sidebarLayout(
+    sidebarPanel(
+      selectInput(inputId = "artist", label = "Artist: ", choices = artist, multiple =F)
+    ),
+  
+  
+  mainPanel(verbatimTextOutput("albums"))
+))
+
+server <- function(input, output) {
+  
+  output$albums<- renderPrint({
+    get_artist_audio_features(artist == input$artist) %>%  pull(track_name)
+  })
+ 
+}
+
+shinyApp(ui = ui, server = server)
+
+```
+
 
