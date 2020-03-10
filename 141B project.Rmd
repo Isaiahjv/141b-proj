@@ -6,10 +6,7 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-<<<<<<< HEAD
-=======
-#install.packages('spotifyr')
->>>>>>> 8a02fcd87770b00c734051e1618576d70b114eb2
+
 ```
 
 
@@ -25,14 +22,14 @@ access_token <- get_spotify_access_token()
 
 
 ```{r , echo=FALSE}
-<<<<<<< HEAD
+HEAD
 library(spotifyr)
 beatles <- get_artist_audio_features('the beatles')
 beatles_lp <- get_artist_albums('3WrFJ7ztbogyGnTHbHJFl2')
-=======
+
 beatles <- get_artist_audio_features('led zeppelin')
 beatles
->>>>>>> 8a02fcd87770b00c734051e1618576d70b114eb2
+
 ```
 
 ```{r}
@@ -50,6 +47,10 @@ get_album_data('the beatles')
 ```{r}
 joy <- get_artist_audio_features('joy division')
 joy
+get_genre_artists(genre = "pop", market = NULL, limit = 7,
+      offset = 0, authorization = get_spotify_access_token())
+get_genre_artists(genre = "blues", market = NULL, limit = 7,
+      offset = 0, authorization = get_spotify_access_token())
 ```
 
 
@@ -57,9 +58,9 @@ joy
 
 ```{r}
 
-    albums <- get_artist_audio_features('justin bieber') %>%  pull(track_name)
+albums <- get_artist_audio_features('justin bieber') %>%  pull(track_name)
 
- artist = c("ariana grande", "justin bieber", "post malone")
+artist = c("ariana grande", "justin bieber", "post malone")
 
 ui <- fluidPage(
   
