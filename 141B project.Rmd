@@ -34,6 +34,7 @@ beatles_lp <- get_artist_albums('3WrFJ7ztbogyGnTHbHJFl2')
 =======
 beatles <- get_artist_audio_features('led zeppelin')
 beatles
+
 >>>>>>> 8a02fcd87770b00c734051e1618576d70b114eb2
 ```
 
@@ -79,7 +80,8 @@ ui <- fluidPage(
     mainPanel(
       plotOutput("radarPlot"),
       plotlyOutput("lengthPlot"),
-      plotlyOutput("albumLoudnessPlot")
+      plotlyOutput("albumLoudnessPlot"),
+      textOutput("recommendedArtists")
       )
   ))
 
@@ -132,13 +134,38 @@ server <- function(input, output) {
     add_lines(y= ~valence, color = ~factor(artist_name)) %>% 
     layout(title = "Time series plot of Average Track length corresponding to Artist")
       
-
-        
       
   })
+  
+  
+  output$recommendedArtists <- renderPrint({
+    tempID <- data %>% filter(artist_name %in% input$artists) %>% 
+      select(artist_id) %>% distinct()
+    atistID <- tempID[[1]]
+    recommendation <- get_recommendations(limit = 15,seed_artists = artistID, authorization = get_spotify_access_token())
+  recommendations <- NULL
+  for (i in 4:15){
+    recommendation1 <- recommendation[1][i,1]
+    recommendation1 <- recommendation1[[1]][3] %>% pull()
+    recommendations <- append(recommendations, recommendation1)
+}
+recommendations 
+    
+    
+  })
+  
+  
 }
 
+
 shinyApp(ui = ui, server = server)
+
+```
+
+
+```{r}
+
+
 
 ```
 
