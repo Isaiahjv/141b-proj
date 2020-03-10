@@ -1,0 +1,77 @@
+```{r}
+###Get the data on the artists and compile them to one data frame
+artistnames <- c('Post Malone','Ariana Grande','Billie Eilish','Khalid','Drake','Travis Scott','Ed Sheeran',
+            'Taylor Swift', 'Halsey')
+data <- get_artist_audio_features('Post Malone')
+for (i in 2:length(artistnames)){
+  data_new <- get_artist_audio_features(artistnames[i])
+  data <- bind_rows(data, data_new)
+  data %>% distinct(track_id)
+}
+
+
+
+ui <- fluidPage(
+  
+  titlePanel("Test"),
+  
+  sidebarLayout(
+    sidebarPanel(
+      selectInput(inputId = "artists", label = "Artist: ", choices = artistnames, multiple =F)
+    ),
+    
+    
+    mainPanel(
+      plotOutput("radarPlot"),
+      plotlyOutput("lengthPlot"),
+      plotlyOutput("albumLoudnessPlot")
+      )
+  ))
+
+server <- function(input, output) {
+
+  output$radarPlot <- renderPlot({
+    artist_radar <- data %>% filter(artist_name == input$artists) %>% 
+      select(danceability,  energy, acousticness, valence, loudness) %>% 
+      as.data.frame() %>% mutate(loudness = (mean(loudness) / (-60))) %>% 
+      summarize(mean(danceability), mean(energy), mean(acousticness), mean(valence), mean(loudness)) 
+  artist_radar <- rbind(rep(1,6) , rep(0,6) , artist_radar) # 1 is the upper bound and 0 is the lower
+  colnames(artist_radar) = c('Danceability', 'Energy', 'Acousticness', 'Valence', 'loudness') 
+  radarchart(artist_radar, axistype=1, 
+             #custom polygon
+             pcol=rgb(0.2,0.5,0.5,0.9) , pfcol=rgb(0.2,0.5,0.5,0.5) , plwd=1 , 
+             #custom the grid
+             cglcol="grey", cglty=1, axislabcol="grey", caxislabels=seq(0,1,5), cglwd=0.8,
+             #custom labels
+             vlcex=0.8 )
+             
+  })
+  
+  output$lengthPlot <- renderPlotly({
+    tracklength <- data %>%  filter(artist_name == input$artists)  %>% 
+      select(artist_name, duration_ms) 
+    tracklength$artist_name <- as.factor(tracklength$artist_name)
+  tracklength %>% plot_ly(x= ~(duration_ms / 60000), color = ~factor(artist_name),nbinsx = 10) %>% 
+  add_histogram(histnorm = "", alpha = 0.7) %>%
+  layout(barmode = "overlay", title = "Histogram of Average Track length corresponding to Artist")  
+    
+  })
+  
+  
+  output$albumLoudnessPlot <- renderPlotly({
+  albumTrackLoudness <- data %>%  filter(artist_name == input$artists)  %>% 
+      select(artist_name, album_name, loudness,album_release_year) 
+    albumNames <- albumTrackLoudness %>% distinct(album_name)
+    albumTrackLoudness <- albumTrackLoudness %>% group_by(album_release_year) %>% summarize(meanLoudness = mean(loudness)) 
+      plot_ly(albumTrackLoudness, x = ~album_release_year, y = ~meanLoudness,  type = 'scatter', mode = 'lines')
+      
+      
+  })
+
+
+
+}
+
+shinyApp(ui = ui, server = server)
+
+```
