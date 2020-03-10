@@ -1,0 +1,106 @@
+```{r,message = F}
+library(spotifyr)
+library(tidyverse)
+library(knitr)
+library(ggplot2)
+library(fmsb)
+library(shiny)
+library(dplyr)
+library(plotly)
+library("scales")
+Sys.setenv(SPOTIFY_CLIENT_ID = 'f0d212500a7e4c74baaab9025ea186c3')
+Sys.setenv(SPOTIFY_CLIENT_SECRET = '4985198dd20d47c7bdc5e52a1cf01e3f')
+access_token <- get_spotify_access_token()
+```
+
+```{r, message = F}
+artistnames <- c('Post Malone','Ariana Grande','Billie Eilish','Khalid')
+data <- get_artist_audio_features('Post Malone')
+for (i in 2:length(artistnames)){
+  data_new <- get_artist_audio_features(artistnames[i])
+  data <- bind_rows(data, data_new)
+  data %>% distinct(track_id)
+}
+
+
+
+ui <- fluidPage(
+  
+  titlePanel("Test"),
+  
+  sidebarLayout(
+    sidebarPanel(
+      selectInput(inputId = "artists", label = "Select 3 Artists: ", choices = artistnames, multiple =T)
+    ),
+    
+    
+    mainPanel(
+      plotOutput("radarPlot"),
+      plotlyOutput("lengthPlot"),
+      plotlyOutput("albumLoudnessPlot")
+      )
+  ))
+
+server <- function(input, output) {
+
+  
+  output$radarPlot <- renderPlot({
+  artist_radar <- data %>% filter(artist_name %in% input$artists) 
+  artist_radar <- artist_radar %>% group_by(artist_name) %>%  summarize_all(funs(mean)) 
+  artist_radar <- artist_radar %>% 
+   select(danceability,energy, acousticness, valence, loudness) %>% mutate(loudness = loudness / -60) 
+    colnames(artist_radar) = c('Danceability', 'Energy', 'Acousticness', 'Valence', 'loudness') 
+  rownames(artist_radar) = c("Artist 1", "Artist 2", "Artist 3")
+  artist_radar <- rbind(rep(1,6) , rep(0,6) , artist_radar)
+  
+  col_border=c( rgb(0.2,0.5,0.5,0.9), rgb(0.8,0.2,0.5,0.9) , rgb(0.7,0.5,0.1,0.9) )
+  col_in=c( rgb(0.2,0.5,0.5,0.4), rgb(0.8,0.2,0.5,0.4) , rgb(0.7,0.5,0.1,0.4) )
+  
+  radarchart(artist_radar, axistype=1, 
+             #custom polygon
+             pcol= col_border , pfcol=col_in , plwd=4 , plty = 1,
+             #custom the grid
+             cglcol="grey", cglty=1, axislabcol="grey", caxislabels=seq(0,1,5), cglwd=0.8,
+             #custom labels
+             vlcex=0.8 )
+             
+  })
+  
+  
+  
+  output$lengthPlot <- renderPlotly({
+   tracklength <- data %>%  filter(artist_name %in% input$artists)  %>% 
+      select(artist_name, duration_ms, album_release_year) 
+  tracklength$artist_name <- as.factor(tracklength$artist_name)
+  tracklength %>% plot_ly(x= ~(duration_ms / 60000), color = ~factor(artist_name),nbinsx = 10) %>% 
+  add_histogram(histnorm = "", alpha = 0.7) %>%
+  layout(barmode = "overlay", title = "Histogram of Average Track length corresponding to Artist") 
+
+    
+  })
+  
+  
+  
+  output$albumLoudnessPlot <- renderPlotly({
+  trackTempo <-  data %>%  filter(artist_name %in% input$artists)  %>% 
+      select(artist_name, duration_ms, valence,tempo) 
+  trackTempo$artist_name <- as.factor(tracklength$artist_name)
+  trackTempo %>% 
+    plot_ly(x= ~tempo) %>% 
+    add_lines(y= ~valence, color = ~factor(artist_name)) %>% 
+    layout(title = "Time series plot of Average Track length corresponding to Artist")
+      
+
+        
+      
+  })
+}
+
+shinyApp(ui = ui, server = server)
+```
+
+
+```{r}
+related <- get_related_artist('3WrFJ7ztbogyGnTHbHJFl2')
+recommendations <- get_recommendations()
+```
