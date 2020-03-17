@@ -59,6 +59,7 @@ for (i in 2: (temp %>% select(name) %>% nrow()) ){
 dat %>% select(valence) %>% summary()
 library(shiny)
 
+<<<<<<< HEAD
 ui = fluidPage(
     sidebarPanel( #designates location of following items
         htmlOutput("genre_selector"),#add selectinput boxs
@@ -92,6 +93,47 @@ server = shinyServer(function(input, output){
         
         data_available = dat %>% filter(genre %in% input$genre) %>% select(artist_name) %>% pull() 
         #creates a reactive list of available counties based on the State selection made
+=======
+    ui = fluidPage(
+        sidebarPanel( #designates location of following items
+            htmlOutput("genre_selector"),#add selectinput boxs
+            htmlOutput("artist_selector")# from objects created in server
+        ),
+        
+        mainPanel(
+            tabPanel("valence", verbatimTextOutput("summary")),
+            plotlyOutput('plot'),
+            plotOutput("radarPlot"),
+            plotlyOutput("lengthPlot"),
+            plotlyOutput("albumLoudnessPlot"),
+            textOutput("recommendedArtists")
+        )
+        
+    )
+    server = shinyServer(function(input, output){
+        
+        output$genre_selector = renderUI({ #creates State select box object called in ui
+            selectInput(inputId = "genre", #name of input
+                        label = "Genre:", #label displayed in ui
+                        choices = as.character(unique(c("pop","blues", "wonky", "rock"))),
+                        multiple = T,
+                        # calls unique values from the State column in the previously created table
+                        selected = "pop") #default choice (not required)
+        })
+        
+       
+        output$artist_selector = renderUI({#creates County select box object called in ui
+            
+            data_available = dat %>% filter(genre %in% input$genre) %>% select(artist_name) %>% pull() 
+            #creates a reactive list of available counties based on the State selection made
+            
+            selectInput(inputId = "artist", #name of input
+                        label = "Artist:", #label displayed in ui
+                        choices = unique(data_available), #calls list of available counties
+                        multiple = T,
+                        selected = unique(data_available[1]) )
+        })
+>>>>>>> 84c6e5e62442ccb5fcdb367cc1d090ea20e5b4eb
         
         selectInput(inputId = "artist", #name of input
                     label = "Artist:", #label displayed in ui
@@ -177,6 +219,7 @@ server = shinyServer(function(input, output){
         
     })
     
+<<<<<<< HEAD
     
     output$bubb <- renderPlotly({
         dat  %>%  filter(artist_name %in% input$artist) %>% mutate(valence = 100*valence, danceability = 100*danceability, diff = abs(danceability - valence)) %>% 
@@ -187,6 +230,8 @@ server = shinyServer(function(input, output){
         
         
     })
+=======
+>>>>>>> 84c6e5e62442ccb5fcdb367cc1d090ea20e5b4eb
     
    
     
