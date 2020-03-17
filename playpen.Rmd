@@ -72,12 +72,11 @@ library(shiny)
 ui = fluidPage(
     sidebarPanel( #designates location of following items
         htmlOutput("genre_selector"),#add selectinput boxs
-        htmlOutput("artist_selector")# from objects created in server
+        htmlOutput("artist_selector"),# from objects created in server
+        plotlyOutput("recommendedArtists"),
     ),
     
     mainPanel(
-        tabPanel("valence", verbatimTextOutput("summary")),
-        textOutput("recommendedArtists"),
         plotlyOutput('plot'),
         plotOutput("radarPlot"),
         plotlyOutput("lengthPlot"),
@@ -174,18 +173,17 @@ server = shinyServer(function(input, output){
         
     })
     
-    output$recommendedArtists <- renderPrint({
+    output$recommendedArtists <- renderPlotly({
   tempID <- dat %>% filter(artist_name %in% input$artist) %>% 
       select(artist_id) %>% distinct()
     artistID <- tempID[[1:length(tempID)]]
-   recommendation <- NULL
-    recommendation <- get_recommendations(limit = 15, seed_artists = artistID, authorization = get_spotify_access_token())
-
-       zz <- recommendation %>% select(artists) %>% plyr::ldply(rbind,row.names = NULL) 
-        %>% select(starts_with("name")) %>% pivot_longer(everything(), names_to = "x",  values_to = "names") 
-       %>% select(names) %>% filter(!(names %in% input$artist)) %>% pull() %>% str_c(collapse = ", ")
-
-      zz <- rbind( rep(str_c(temp, collapse = ", "), times = length(zz)) , zz) 
+   
+     recommendation <- get_recommendations(limit = 15, seed_artists = artistID, authorization = get_spotify_access_token())
+    
+     zz <- recommendation %>% select(artists) %>% plyr::ldply(rbind) %>% select(starts_with("name")) %>% pivot_longer(everything(), names_to = "x",  values_to = "names") %>% 
+       select(names) %>% filter(!(names %in% input$artist)) %>% pull() %>% str_c(collapse = ", ")
+  
+    zz <- rbind(rep(str_c(input$artist, collapse = ", "), times = length(zz)) , zz) 
       
       fig <- plot_ly(
   type = 'table',
