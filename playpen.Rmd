@@ -154,20 +154,24 @@ server = shinyServer(function(input, output){
         tracklength$artist_name <- as.factor(tracklength$artist_name)
         tracklength %>% plot_ly(x= ~(duration_ms / 60000), color = ~factor(artist_name),nbinsx = 10) %>% 
             add_histogram(histnorm = "", alpha = 0.7) %>%
-            layout(barmode = "overlay", title = "Histogram of Average Track length corresponding to Artist") 
+            layout(barmode = "stack", title = "Histogram of Average Track length corresponding to Artist") 
         
         
     })
     
     output$albumLoudnessPlot <- renderPlotly({
-        trackTempo <-  dat %>%  filter(artist_name %in% input$artist)  %>% 
-            select(artist_name, duration_ms, valence,tempo) 
-        trackTempo$artist_name <- as.factor(trackTempo$artist_name)
-        trackTempo %>% 
-            plot_ly(x= ~tempo) %>% 
-            add_lines(y= ~valence, color = ~factor(artist_name)) %>% 
-            layout(title = "Time series plot of Average Track length corresponding to Artist")
-        
+      
+        dat %>% filter(artist_name %in% input$artist ) %>% group_by(album_release_date,artist_name,album_name) %>% summarize(avg_tempo= mean(tempo)) %>% ungroup() %>% mutate(album_release_date = lubridate::as_date(album_release_date)) %>%
+  plot_ly(x = ~album_release_date, y = ~avg_tempo, mode = 'lines',  color = ~factor(artist_name), text = ~factor(album_name))
+
+        # trackTempo <-  dat %>%  filter(artist_name %in% input$artist)  %>% 
+        #     select(artist_name, duration_ms, valence,tempo) 
+        # trackTempo$artist_name <- as.factor(trackTempo$artist_name)
+        # trackTempo %>% 
+        #     plot_ly(x= ~tempo) %>% 
+        #     add_lines(y= ~valence, color = ~factor(artist_name)) %>% 
+        #     layout(title = "Time series plot of Average Track length corresponding to Artist")
+        # 
         
         
         
