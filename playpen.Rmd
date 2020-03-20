@@ -77,12 +77,14 @@ ui = fluidPage(
     ),
     
     mainPanel(
-        plotlyOutput('plot'),
-        plotOutput("radarPlot"),
-        plotlyOutput("lengthPlot"),
-        plotlyOutput("albumLoudnessPlot"),
-        plotlyOutput("bubb"),
-         plotlyOutput("bar")
+      tableOutput("summary"),
+      plotOutput('summaryplot'),
+      plotlyOutput('plot'),
+      plotOutput("radarPlot"),
+      plotlyOutput("lengthPlot"),
+      plotlyOutput("albumLoudnessPlot"),
+      plotlyOutput("bubb"),
+      plotlyOutput("bar")
         
     )
     
@@ -112,8 +114,33 @@ server = shinyServer(function(input, output){
     })
     
     
-    output$summary = renderPrint({
-        dat %>% filter(artist_name %in% input$artist) %>% select(valence) %>% summary()
+    output$summary = renderTable({
+        dat %>% 
+        filter(artist_name %in% input$artist) %>% 
+        group_by(artist_name) %>% 
+        mutate(duration_m = duration_ms/60000) %>% 
+        select(artist_name, genre, danceability, energy, loudness, speechiness, acousticness, instrumentalness, liveness, valence, tempo, duration_m) %>% 
+        summarise_all(funs(mean))
+    })
+    
+    output$summaryplot = renderPlot({
+      summaryplot = dat %>% 
+        filter(artist_name %in% input$artist) %>% 
+        # Scale to 0 to 1 by myself, based on spotify's developer information
+        mutate(duration_m = duration_ms/60000, 
+               loudness = loudness/60 + 1, 
+               tempo = tempo/250) %>% 
+        select(artist_name, danceability, energy, loudness, speechiness, acousticness, instrumentalness, liveness, valence, tempo) %>% 
+        group_by(artist_name) %>% 
+        summarise_all(funs(mean))
+      summaryplot = data.frame(artistname = rep(summaryplot$artist_name, 9), 
+                         character = rep(colnames(summaryplot)[2:10], times=1, each=nrow(summaryplot)), 
+                         value = c(as.matrix(summaryplot[,2:10])))
+        ggplot(data = summaryplot,
+               aes(x=character, 
+                   y=value, 
+                   fill=artistname)) + 
+          geom_bar(stat="identity", position=position_dodge())
     })
     
     output$plot <- renderPlotly(
@@ -216,11 +243,17 @@ fig
     
     
     output$bubb <- renderPlotly({
-        dat  %>%  filter(artist_name %in% input$artist) %>% mutate(valence = 100*valence, danceability = 100*danceability, diff = abs(danceability - valence)/10) %>% 
-            plot_ly( x = ~danceability, y = ~valence, size = ~diff ,text = ~genre, color = ~factor(artist_name), type = 'scatter', mode = 'markers',
-                 marker = list(opacity = 0.5, sizemode = 'diameter')) %>% layout(title = 'valence energy diff',
-                              xaxis = list(showgrid = FALSE),
-                              yaxis = list(showgrid = FALSE))
+        dat  %>%  
+        filter(artist_name %in% input$artist) %>% 
+        mutate(valence = 100*valence, 
+               danceability = 100*danceability, 
+               diff = abs(danceability - valence)/10) %>% 
+        plot_ly( x = ~danceability, 
+                 y = ~valence, 
+                 color = ~factor(artist_name)) %>% 
+        layout(title = 'valence energy diff',
+               xaxis = list(showgrid = FALSE),
+               yaxis = list(showgrid = FALSE))
         
         
     })
