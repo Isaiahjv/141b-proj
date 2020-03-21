@@ -27,6 +27,8 @@ library(plotly)
 Sys.setenv(SPOTIFY_CLIENT_ID = 'f0d212500a7e4c74baaab9025ea186c3')
 Sys.setenv(SPOTIFY_CLIENT_SECRET = '4985198dd20d47c7bdc5e52a1cf01e3f')
 
+
+
 access_token <- get_spotify_access_token()
 pop <- get_genre_artists(genre = "pop", market = NULL, limit = 4,
                          offset = 0, authorization = access_token)
@@ -116,10 +118,10 @@ server = shinyServer(function(input, output){
     output$summary = renderTable({
         dat %>% 
         filter(artist_name %in% input$artist) %>% 
-        group_by(artist_name) %>% 
+        group_by(artist_name,genre) %>% 
         mutate(duration_m = duration_ms/60000) %>% 
         select(artist_name, genre, danceability, energy, loudness, speechiness, acousticness, instrumentalness, liveness, valence, tempo, duration_m) %>% 
-        summarise_all(funs(mean))
+        summarize_if(is.numeric,mean,na.rm = T) 
     })
     
     output$summaryplot = renderPlot({
