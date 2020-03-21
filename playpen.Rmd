@@ -190,17 +190,6 @@ server = shinyServer(function(input, output){
       
         dat %>% filter(artist_name %in% input$artist ) %>% group_by(album_release_date,artist_name,album_name) %>% summarize(avg_tempo= mean(tempo)) %>% ungroup() %>% mutate(album_release_date = lubridate::as_date(album_release_date)) %>%
   plot_ly(x = ~album_release_date, y = ~avg_tempo, mode = 'lines',  color = ~factor(artist_name), text = ~factor(album_name))
-
-        # trackTempo <-  dat %>%  filter(artist_name %in% input$artist)  %>% 
-        #     select(artist_name, duration_ms, valence,tempo) 
-        # trackTempo$artist_name <- as.factor(trackTempo$artist_name)
-        # trackTempo %>% 
-        #     plot_ly(x= ~tempo) %>% 
-        #     add_lines(y= ~valence, color = ~factor(artist_name)) %>% 
-        #     layout(title = "Time series plot of Average Track length corresponding to Artist")
-        # 
-        
-        
         
     })
     
@@ -211,12 +200,12 @@ server = shinyServer(function(input, output){
    
      recommendation <- get_recommendations(limit = 15, seed_artists = artistID, authorization = get_spotify_access_token())
     
-     zz <- recommendation %>% select(artists) %>% plyr::ldply(rbind) %>% select(starts_with("name")) %>% pivot_longer(everything(), names_to = "x",  values_to = "names") %>% 
-       select(names) %>% filter(!(names %in% input$artist)) %>% pull() %>% str_c(collapse = ", ")
+    zz <- recommendation %>% pull(artists) %>% bind_rows() %>% 
+      filter(!(name %in% input$artists)) %>% pull(name) %>% str_c(collapse = ", ")
   
     zz <- rbind(rep(str_c(input$artist, collapse = ", "), times = length(zz)) , zz) 
       
-      fig <- plot_ly(
+      plot_ly(
   type = 'table',
   columnorder = c(1,2),
   columnwidth = c(80,400),
@@ -237,7 +226,6 @@ server = shinyServer(function(input, output){
     height = 30
     ))
 
-fig
     
   })
     
