@@ -80,7 +80,6 @@ ui = fluidPage(
       tableOutput("summary"),
       plotOutput('summaryplot'),
       plotlyOutput('plot'),
-      plotOutput("radarPlot"),
       plotlyOutput("lengthPlot"),
       plotlyOutput("albumLoudnessPlot"),
       plotlyOutput("bubb"),
@@ -153,27 +152,7 @@ server = shinyServer(function(input, output){
             mode = 'markers')
     )
     
-    output$radarPlot <- renderPlot({
-        artist_radar <- dat %>% filter(artist_name %in% input$artist) 
-        artist_radar <- artist_radar %>% group_by(artist_name) %>%  summarize_all(funs(mean)) 
-        artist_radar <- artist_radar %>% 
-            select(danceability,energy, acousticness, valence, loudness) %>% mutate(loudness = loudness / -60) 
-        colnames(artist_radar) = c('Danceability', 'Energy', 'Acousticness', 'Valence', 'loudness') 
-        rownames(artist_radar) = c("Artist 1", "Artist 2", "Artist 3")
-        artist_radar <- rbind(rep(1,6) , rep(0,6) , artist_radar)
-        
-        col_border=c( rgb(0.2,0.5,0.5,0.9), rgb(0.8,0.2,0.5,0.9) , rgb(0.7,0.5,0.1,0.9) )
-        col_in=c( rgb(0.2,0.5,0.5,0.4), rgb(0.8,0.2,0.5,0.4) , rgb(0.7,0.5,0.1,0.4) )
-        
-        radarchart(artist_radar, axistype=1, 
-                   #custom polygon
-                   pcol= col_border , pfcol=col_in , plwd=4 , plty = 1,
-                   #custom the grid
-                   cglcol="grey", cglty=1, axislabcol="grey", caxislabels=seq(0,1,5), cglwd=0.8,
-                   #custom labels
-                   vlcex=0.8 )
-        
-    })
+   
     
     output$lengthPlot <- renderPlotly({
         tracklength <- dat %>%  filter(artist_name %in% input$artist)  %>% 
